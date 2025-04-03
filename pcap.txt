@@ -1,0 +1,49 @@
+Cisco IOS
+
+conf t
+ip access-list extended BUF-FILTER
+    permit ip host 10.236.64.96 host 10.1.1.2
+    permit ip host 10.1.1.2 host 10.236.64.96
+exit
+exit
+
+
+monitor capture buffer BUF linear
+
+monitor capture buffer BUF filter access-list BUF-FILTER
+
+monitor capture point ip cef POINT gigabitethernet 0/1 both
+
+monitor capture point associate POINT BUF
+
+monitor capture point start POINT
+
+monitor capture point stop POINT
+
+show monitor capture buffer BUF dump
+
+monitor capture buffer BUF export tftp://10.1.1.5/BUF.pcap
+Cisco IOS-XE
+
+monitor capture CAP interface GigabitEthernet0/0/1 both
+
+monitor capture CAP match ipv4 protocol tcp any any limit pps 1000000
+
+monitor capture CAP start
+
+monitor capture CAP stop
+
+
+
+
+show monitor capture CAP buffer detailed
+
+monitor capture CAP export tftp://10.0.0.1/CAP.pcap
+
+no monitor capture CAP
+
+Troubleshoot
+For EPC that runs on Cisco IOS-XE®, this debug command is used to ensure EPC is set up properly:
+
+debug epc provision
+debug epc capture-point
