@@ -1,0 +1,16 @@
+---
+- hosts: sandbox_routers
+  name: Verify SW version on Cisco IOS XE
+  connection: network_cli
+
+  tasks:
+      - name: Collect SW version from Cisco IOS XE
+        ios_command:
+            commands: 
+                - show version | include Cisco IOS XE        
+        register: show_ouput
+
+      - name: Show results
+        debug: 
+            msg: "{{ show_ouput.stdout }}"
+       

@@ -1,0 +1,28 @@
+---
+- hosts: sandbox_routers
+  name: Verify SW version on Cisco IOS XE
+  connection: network_cli
+
+  vars:
+      target_cisco_sw: 17.12.02   
+
+  tasks:
+      - name: Collect SW version from Cisco IOS XE
+        ios_command:
+            commands: 
+                - show version | include Cisco IOS XE        
+        register: show_output
+       
+      - name: Create variable with SW value
+        set_fact:
+            cisco_sw: "{{ show_output.stdout | string | regex_replace ('^.*Version(.+)\\[.*$', '\\1')}}"
+
+      - name: debug
+        debug: 
+            msg: SW upgrade is needed! Device {{ inventory_hostname }} is running Cisco IOS XE {{ cisco_sw }}, target release is {{ target_cisco_sw }}
+        when: cisco_sw != target_cisco_sw
+
+      - name: debug
+        debug: 
+            msg: SW is actual, no actions are needed! Device {{ inventory_hostname }} is runnning Cisco IOS XE {{ cisco_sw }}, target release is {{ target_cisco_sw }} 
+        when: cisco_sw == target_cisco_sw     

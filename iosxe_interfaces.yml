@@ -1,0 +1,10 @@
+---
+- hosts: sandbox_routers
+  name: Verify Interfaces on Cisco IOS XE
+  connection: network_cli
+  tasks:
+    - name: Display interfaces on Cisco IOS XE
+      ios_command:
+        commands: show ip interface brief
+      register: interfaces
+    - debug: msg="{{ interfaces.stdout_lines }}"
