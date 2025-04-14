@@ -1,0 +1,29 @@
+To create a local and remote Git repository on the same Linux server, follow these steps:
+1. Set Up the Remote Repository
+- Create a directory for the remote repository:mkdir -p /var/tmp/remote_git_repo
+
+- Initialize it as a bare Git repository:
+A bare repository is used for remote purposes. It doesn't contain a working directory.git init --bare /var/tmp/remote_git_repo
+
+
+2. Create the Local Repository
+- Navigate to your project directory:cd ~/local_git_repo
+
+- Initialize a Git repository:git init
+
+- Add files to the staging area:git add .
+
+- Commit the files:git commit -m "Initial commit"
+
+
+3. Link Local to Remote
+- Add the remote repository:git remote add origin /var/tmp/remote_git_repo
+
+- Push your changes to the remote repository:git push -u origin master
+
+
+4. Verify Everything
+- Check the remote repository:git remote -v
+
+- Navigate to the remote repository directory:cd /var/tmp/remote_git_repo
+Ensure the contents are updated.
