@@ -1,0 +1,108 @@
+---
+- hosts: sandbox_routers
+  name: Verify, Upgrade, and Validate Cisco IOS XE
+  connection: network_cli
+
+  vars:
+      target_cisco_sw: "17.09.04a"
+      tftp_server: "anonymous@10.77.4.84"
+      tftp_image: "Cisco_OS/IOS/cat9k_iosxe-17.09.04aSPA.bin"
+      remote_image_path: "flash:vrf Mgmt-vrf"
+
+  tasks:
+      # Pre-check: Verify available disk space before downloading
+      - name: Check available disk space
+        ios_command:
+            commands:
+                - "dir flash:"
+        register: disk_space_output
+
+      - name: Ensure sufficient space for installation
+        debug:
+            msg: "Warning: Insufficient space detected on {{ inventory_hostname }}!"
+        when: "'bytes free' not in disk_space_output.stdout[0]"
+
+      # Collect SW version from Cisco IOS XE
+      - name: Retrieve current software version
+        ios_command:
+            commands: 
+                - show version | include Cisco IOS XE        
+        register: show_output
+       
+      - name: Create variable with SW value
+        set_fact:
+            cisco_sw: "{{ show_output.stdout | regex_replace('^.*Version(.+)\\1')}}"
+
+      # Check if SW upgrade is needed
+      - name: Check if upgrade is required
+        debug:
+            msg: "SW upgrade required! Device {{ inventory_hostname }} is running {{ cisco_sw }}, target release is {{ target_cisco_sw }}"
+        when: cisco_sw != target_cisco_sw
+
+      - name: debug
+        debug: 
+            msg: SW is actual, no actions are needed! Device {{ inventory_hostname }} is runnning Cisco IOS XE {{ cisco_sw }}, target release is {{ target_cisco_sw }} 
+        when: cisco_sw == target_cisco_sw 
+
+      # Download IOS XE image from TFTP server
+      - name: Download new IOS XE image
+        ios_command:
+            commands:
+                - "copy /verify tftp://{{ tftp_server }}/{{ tftp_image }} {{ remote_image_path }}"
+        register: copy_result
+        failed_when: "'Error' in copy_result.stdout[0]"
+
+        when: cisco_sw != target_cisco_sw
+
+     - name: Wait for 45 minutes
+       pause:
+           minutes: 45
+
+     # Add the new IOS XE package to the install repository
+      - name: Add new IOS XE package to install repository
+        ios_command:
+            commands:
+                - "install add file flash:{{ tftp_image }} activate commit"
+        when: cisco_sw != target_cisco_sw
+
+      - name: Wait for 45 minutes
+        pause:
+           minutes: 45
+ 
+      # Set boot variable for new IOS XE image
+      - name: Configure boot settings
+        ios_config:
+            lines:
+                - "boot system flash {{ remote_image_path }}"
+        when: cisco_sw != target_cisco_sw
+
+      # Save configuration
+      - name: Save configuration changes
+        ios_command:
+            commands:
+                - "write memory"
+        when: cisco_sw != target_cisco_sw
+
+      # Reload the device to apply new software
+      - name: Reboot device
+        ios_command:
+            commands:
+                - "reload"
+        when: cisco_sw != target_cisco_sw
+
+      - name: Wait for 10 minutes
+        pause:
+           minutes: 10
+
+      # Post-validation: Confirm upgraded software version
+      - name: Verify new installed version after reboot
+        ios_command:
+            commands: 
+                - show version | include Cisco IOS XE        
+        register: post_upgrade_output
+        when: cisco_sw != target_cisco_sw
+
+      - name: Validate successful upgrade
+        debug:
+            msg: "Upgrade successful! Device {{ inventory_hostname }} is now running {{ post_upgrade_output.stdout }}"
+        when: post_upgrade_output.stdout | regex_search(target_cisco_sw)
