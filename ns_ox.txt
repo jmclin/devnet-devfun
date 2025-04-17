@@ -1,0 +1,71 @@
+from netmiko import ConnectHandler
+from pprint import pprint
+
+# Define device parameters
+device = {
+    "device_type": "cisco_nxos",
+    "host": "your_device_ip",
+    "username": "your_username",
+    "password": "your_password",
+}
+
+try:
+    # Establish SSH connection
+    connection = ConnectHandler(**device)
+    print("Connection established!")
+
+    # Execute first command: show interface description
+    output_1 = connection.send_command("show interface description")
+    print("\nOutput for 'show interface description':")
+    pprint(output_1)
+
+    # Execute second command: show vrrp brief
+    output_2 = connection.send_command("show vrrp brief")
+    print("\nOutput for 'show vrrp brief':")
+    pprint(output_2)
+
+    # Close connection
+    connection.disconnect()
+    print("\nConnection closed.")
+
+except Exception as e:
+    print(f"\nAn error occurred: {e}")
+
+=================
+
+from netmiko import ConnectHandler
+from pprint import pprint
+import getpass
+
+# Prompt for password using getpass
+password = getpass.getpass("Enter your password: ")
+
+# Define device parameters
+device = {
+    "device_type": "cisco_nxos",
+    "host": "your_device_ip",
+    "username": "your_username",
+    "password": password,  # Use the securely entered password
+}
+
+try:
+    # Establish SSH connection
+    connection = ConnectHandler(**device)
+    print("Connection established!")
+
+    # Execute first command: show interface description
+    output_1 = connection.send_command("show interface description")
+    print("\nOutput for 'show interface description':")
+    pprint(output_1)
+
+    # Execute second command: show vrrp brief
+    output_2 = connection.send_command("show vrrp brief")
+    print("\nOutput for 'show vrrp brief':")
+    pprint(output_2)
+
+    # Close connection
+    connection.disconnect()
+    print("\nConnection closed.")
+
+except Exception as e:
+    print(f"\nAn error occurred: {e}")
