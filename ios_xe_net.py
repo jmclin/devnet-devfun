@@ -16,17 +16,17 @@ try:
 
     # Execute first command: show interface status
     output_1 = connection.send_command("show run interface Gi2 | begin ^interface")  # Adjusted for IOX-SE
-    print("\nOutput for 'show run int':")
+    print("Output for 'show run int':")
     pprint(output_1)
 
     # Execute second command: show ip protocols
     output_2 = connection.send_command("show interface Gi2")  # Another IOX-SE command example
-    print("\nOutput for 'show interface':")
+    print("Output for 'show interface':")
     pprint(output_2)
 
     # Close connection
     connection.disconnect()
-    print("\nConnection closed.")
+    print("Connection closed.")
 
 except Exception as e:
     print(f"\nAn error occurred: {e}")
