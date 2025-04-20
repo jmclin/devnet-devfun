@@ -1,0 +1,3 @@
+git log --oneline --pretty=format:%h %ad ios_xe_net.py
+git log --pretty=format:%h %ad --date=short --name-only
+git log --oneline --pretty=format:%h %ad --name-only
